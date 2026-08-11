@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>魔女之旅</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="#" class="nav-logo"><img src="images/hero-bg.jpg" class="nav-logo-img">魔女之旅</a>
+    <ul class="nav-menu">
+      <li><a href="#home">首页</a></li>
+      <li><a href="#story">故事</a></li>
+      <li><a href="#characters">角色</a></li>
+      <li><a href="#gallery">画廊</a></li>
+      <li><a href="#walls">壁纸</a></li>
+      <li><a href="#books">轻小说</a></li>
+      <li><a href="#episodes">旅程</a></li>
+    </ul>
+    <button class="nav-toggle">☰</button>
+  </div>
+</nav>
+
+<section id="home" class="hero">
+  <div class="hero-bg" style="background-image:url('images/hero-bg.jpg')"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-content">
+    <p class="hero-subtitle">旅する魔女の物語</p>
+    <h1 class="hero-title">魔女之旅</h1>
+    <p class="hero-desc">「请别在意。我是旅人，得继续向前才行。」</p>
+    <p class="hero-author">—— 伊蕾娜</p>
+    <div class="hero-btns">
+      <a href="#story" class="btn btn-primary">探索旅程</a>
+      <a href="#characters" class="btn btn-secondary">认识角色</a>
+    </div>
+  </div>
+  <div class="hero-scroll"><span>向下滚动</span><div class="scroll-arrow"></div></div>
+</section>
+
+<section id="story" class="section">
+  <div class="section-header">
+    <h2 class="s-en">STORY</h2>
+    <h2>故事简介</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="story-row">
+    <div class="story-card">
+      <div class="story-card-img" style="background-image:url('images/gallery-02.jpg')"></div>
+      <div class="story-card-body">
+        <h3>关于魔女之旅</h3>
+        <p>《魔女之旅》是白石定规创作的轻小说系列，讲述年轻魔女伊蕾娜踏上旅途，游历各国，邂逅形形色色的人和故事。</p>
+      </div>
+    </div>
+    <div class="story-card">
+      <div class="story-card-img" style="background-image:url('images/wp-01.jpg')"></div>
+      <div class="story-card-body">
+        <h3>灰之魔女</h3>
+        <p>伊蕾娜是和平国罗贝塔最年轻的魔女见习生，通过考试后获得「灰之魔女」称号，骑着扫帚周游世界。</p>
+      </div>
+    </div>
+    <div class="story-card">
+      <div class="story-card-img" style="background-image:url('images/wp-05.jpg')"></div>
+      <div class="story-card-body">
+        <h3>旅程的意义</h3>
+        <p>每个国家都有独特的风俗和魔法。伊蕾娜在旅途中经历欢笑与泪水，见证人性的光明与黑暗。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="characters" class="section">
+  <div class="section-header">
+    <h2 class="s-en">CHARACTERS</h2>
+    <h2>主要角色</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="chars-row">
+    <div class="char-card">
+      <div class="char-bg" style="background-image:url('images/gallery-02.jpg')"></div>
+      <img src="images/hero-bg.jpg" class="char-avatar">
+      <h3>伊蕾娜</h3>
+      <p class="char-title">灰之魔女</p>
+      <p class="char-desc">天才魔女，自幼憧憬旅行，成为魔女后踏上环游世界的旅程。</p>
+    </div>
+    <div class="char-card">
+      <div class="char-bg" style="background-image:url('images/wp-06.jpg')"></div>
+      <img src="images/wp-02.png" class="char-avatar">
+      <h3>芙兰</h3>
+      <p class="char-title">星尘之魔女</p>
+      <p class="char-desc">伊蕾娜的师父，实力强大，默默守护着伊蕾娜的成长。</p>
+    </div>
+    <div class="char-card">
+      <div class="char-bg" style="background-image:url('images/wp-04.png')"></div>
+      <img src="images/wp-05.jpg" class="char-avatar">
+      <h3>沙耶</h3>
+      <p class="char-title">炭之魔女</p>
+      <p class="char-desc">来自东方，对伊蕾娜怀有强烈崇拜，努力成长为独当一面的魔女。</p>
+    </div>
+    <div class="char-card">
+      <div class="char-bg" style="background-image:url('images/wp-03.jpg')"></div>
+      <img src="images/gallery-04.jpg" class="char-avatar">
+      <h3>席拉</h3>
+      <p class="char-title">暗夜之魔女</p>
+      <p class="char-desc">魔女协会成员，芙兰旧识，冷静沉着，多次帮助伊蕾娜。</p>
+    </div>
+  </div>
+</section>
+
+<section id="gallery" class="section">
+  <div class="section-header">
+    <h2 class="s-en">GALLERY</h2>
+    <h2>旅途风光</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="gallery-wrap">
+    <button class="gallery-btn" id="prevBtn">❮</button>
+    <div class="gallery-frame">
+      <div class="gallery-slider" id="gallerySlider">
+        <div class="gallery-slide active" style="background-image:url('images/gallery-01.jpg')">
+          <div class="slide-cap"><h3>魔法师之国</h3><p>旅程的起点，伊蕾娜参加魔法考试，正式成为魔女。</p></div>
+        </div>
+        <div class="gallery-slide" style="background-image:url('images/gallery-02.jpg')">
+          <div class="slide-cap"><h3>花之王国</h3><p>被花海包围的国度，隐藏着令人心碎的魔法秘密。</p></div>
+        </div>
+        <div class="gallery-slide" style="background-image:url('images/gallery-03.jpg')">
+          <div class="slide-cap"><h3>海边之国</h3><p>在沙滩邂逅瓶中少女，聆听来自过去的悲伤故事。</p></div>
+        </div>
+        <div class="gallery-slide" style="background-image:url('images/gallery-04.jpg')">
+          <div class="slide-cap"><h3>时钟之国</h3><p>时间被严格管理的国度，每个人都在与时间赛跑。</p></div>
+        </div>
+        <div class="gallery-slide" style="background-image:url('images/gallery-05.jpg')">
+          <div class="slide-cap"><h3>图书馆之国</h3><p>收藏全世界书籍的国度，隐藏着古老的魔法知识。</p></div>
+        </div>
+      </div>
+    </div>
+    <button class="gallery-btn" id="nextBtn">❯</button>
+  </div>
+  <div class="gallery-dots" id="galleryDots"></div>
+</section>
+
+<section id="walls" class="section">
+  <div class="section-header">
+    <h2 class="s-en">WALLPAPERS</h2>
+    <h2>高清壁纸</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="walls-grid">
+    <div class="wall-item" style="background-image:url('images/hero-bg.jpg')" onclick="openLightbox('images/hero-bg.jpg')"><span>1920×1572</span></div>
+    <div class="wall-item" style="background-image:url('images/gallery-01.jpg')" onclick="openLightbox('images/gallery-01.jpg')"><span>2560×1440</span></div>
+    <div class="wall-item" style="background-image:url('images/gallery-02.jpg')" onclick="openLightbox('images/gallery-02.jpg')"><span>3840×2160</span></div>
+    <div class="wall-item" style="background-image:url('images/wp-01.jpg')" onclick="openLightbox('images/wp-01.jpg')"><span>5120×2876</span></div>
+    <div class="wall-item" style="background-image:url('images/wp-02.png')" onclick="openLightbox('images/wp-02.png')"><span>2006×1416</span></div>
+    <div class="wall-item" style="background-image:url('images/wp-03.jpg')" onclick="openLightbox('images/wp-03.jpg')"><span>4800×2700</span></div>
+    <div class="wall-item" style="background-image:url('images/gallery-03.jpg')" onclick="openLightbox('images/gallery-03.jpg')"><span>2894×2412</span></div>
+    <div class="wall-item" style="background-image:url('images/gallery-04.jpg')" onclick="openLightbox('images/gallery-04.jpg')"><span>3600×2400</span></div>
+    <div class="wall-item" style="background-image:url('images/gallery-05.jpg')" onclick="openLightbox('images/gallery-05.jpg')"><span>2879×2304</span></div>
+    <div class="wall-item" style="background-image:url('images/wp-04.png')" onclick="openLightbox('images/wp-04.png')"><span>4088×2751</span></div>
+    <div class="wall-item" style="background-image:url('images/wp-05.jpg')" onclick="openLightbox('images/wp-05.jpg')"><span>3200×1213</span></div>
+    <div class="wall-item" style="background-image:url('images/wp-06.jpg')" onclick="openLightbox('images/wp-06.jpg')"><span>1920×1604</span></div>
+  </div>
+</section>
+
+<section id="books" class="section">
+  <div class="section-header">
+    <h2 class="s-en">LIGHT NOVEL</h2>
+    <h2>轻小说图书馆</h2>
+    <div class="divider"></div>
+    <p class="section-sub">白石定规 · 魔女之旅系列 · 25册</p>
+  </div>
+  <div class="books-wrap">
+    <h3 class="books-cat">主系列 <span>(21卷)</span></h3>
+    <div class="books-grid" id="booksGrid"></div>
+    <h3 class="books-cat">外传 <span>(2卷)</span></h3>
+    <div class="books-grid" id="spinGrid"></div>
+    <h3 class="books-cat">番外 <span>(2卷)</span></h3>
+    <div class="books-grid" id="extraGrid"></div>
+  </div>
+</section>
+
+<section id="episodes" class="section">
+  <div class="section-header">
+    <h2 class="s-en">JOURNEY</h2>
+    <h2>旅程记录</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="timeline">
+    <div class="tl-item tl-left">
+      <div class="tl-card">
+        <div class="tl-img" style="background-image:url('images/gallery-01.jpg')"></div>
+        <div class="tl-body"><span class="tl-num">01</span><h3>魔女见习生伊蕾娜</h3><p>通过魔法考试，获得「灰之魔女」称号，正式踏上旅程。</p></div>
+      </div>
+    </div>
+    <div class="tl-item tl-right">
+      <div class="tl-card">
+        <div class="tl-img" style="background-image:url('images/gallery-02.jpg')"></div>
+        <div class="tl-body"><span class="tl-num">02</span><h3>花之王国与瓶中少女</h3><p>在花田邂逅瓶中少女，了解到关于爱与牺牲的魔法故事。</p></div>
+      </div>
+    </div>
+    <div class="tl-item tl-left">
+      <div class="tl-card">
+        <div class="tl-img" style="background-image:url('images/wp-02.png')"></div>
+        <div class="tl-body"><span class="tl-num">03</span><h3>无民之国的王女</h3><p>在废墟之城遇见无民之国的王女，揭开被诅咒的悲剧。</p></div>
+      </div>
+    </div>
+    <div class="tl-item tl-right">
+      <div class="tl-card">
+        <div class="tl-img" style="background-image:url('images/wp-06.jpg')"></div>
+        <div class="tl-body"><span class="tl-num">04</span><h3>沙耶的告白</h3><p>在魔法师之国与沙耶相遇，展开关于追逐与成长的故事。</p></div>
+      </div>
+    </div>
+    <div class="tl-item tl-left">
+      <div class="tl-card">
+        <div class="tl-img" style="background-image:url('images/gallery-03.jpg')"></div>
+        <div class="tl-body"><span class="tl-num">05</span><h3>旅程继续</h3><p>伊蕾娜的旅途永无止境，每一次相遇都是珍贵的回忆。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-bg" style="background-image:url('images/wp-05.jpg')"></div>
+  <div class="footer-content">
+    <p class="footer-quote">「世界如此广阔，还有许多未知的景色等待着我。」<br><span>—— 伊蕾娜</span></p>
+    <div class="footer-links">
+      <a href="#home">首页</a><a href="#story">故事</a><a href="#characters">角色</a>
+      <a href="#gallery">画廊</a><a href="#walls">壁纸</a><a href="#books">轻小说</a>
+    </div>
+    <p class="footer-copy">© 2024 魔女之旅 - 致敬白石定规</p>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close" onclick="closeLightbox()">&times;</span>
+  <img id="lbImg" src="">
+</div>
+
+<button class="back-to-top" id="backToTop">↑</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="books.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
