@@ -7,12 +7,10 @@ window.addEventListener('scroll',function(){
   document.getElementById('backToTop').classList.toggle('visible',window.scrollY>500);
 });
 
-// mobile menu
 var toggle=document.querySelector('.nav-toggle'),menu=document.querySelector('.nav-menu');
 toggle.addEventListener('click',function(){menu.classList.toggle('active');});
 menu.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){menu.classList.remove('active');});});
 
-// particles
 (function(){
   var c=document.getElementById('particles'),n=50;
   for(var i=0;i<n;i++){
@@ -26,7 +24,6 @@ menu.querySelectorAll('a').forEach(function(l){l.addEventListener('click',functi
   }
 })();
 
-// gallery carousel
 (function(){
   var slides=document.querySelectorAll('.gallery-slide'),dotsC=document.getElementById('galleryDots');
   var cur=0,total=slides.length;
@@ -47,10 +44,8 @@ menu.querySelectorAll('a').forEach(function(l){l.addEventListener('click',functi
   document.addEventListener('keydown',function(e){if(e.key==='ArrowLeft')prev();if(e.key==='ArrowRight')next();});
 })();
 
-// back to top
 document.getElementById('backToTop').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
 
-// scroll animations
 var observer=new IntersectionObserver(function(entries){
   entries.forEach(function(e){if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});
 },{threshold:.1});
@@ -58,42 +53,55 @@ document.querySelectorAll('.story-card,.char-card,.tl-card,.wall-item,.book-item
   el.style.opacity='0';el.style.transform='translateY(30px)';el.style.transition='opacity .6s,transform .6s';observer.observe(el);
 });
 
-// lightbox
 window.openLightbox=function(src){document.getElementById('lbImg').src=src;document.getElementById('lightbox').classList.add('show');};
 window.closeLightbox=function(){document.getElementById('lightbox').classList.remove('show');};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
-// books grid
 (function(){
   var main=[],spin=[],extra=[];
-  BOOKS.forEach(function(b){
-    if(b.cat==='spin')spin.push(b);else if(b.cat==='extra')extra.push(b);else main.push(b);
-  });
-  renderGrid('booksGrid',main);
-  renderGrid('spinGrid',spin);
-  renderGrid('extraGrid',extra);
-
+  function loadBooks(){
+    fetch('/api/books').then(function(r){return r.json();}).then(function(data){
+      (data||[]).forEach(function(b){
+        if(b.cover&&b.cover.indexOf('cover_')>=0){b.cat='main'}
+        else if(b.cover){b.cat='main'}
+        if(b.title.indexOf('外传')>=0||b.title.indexOf('莉莉')>=0)spin.push(b);
+        else if(b.title.indexOf('番外')>=0||b.title.indexOf('學園')>=0||b.title.indexOf('学园')>=0)extra.push(b);
+        else main.push(b);
+      });
+      main.sort(function(a,b){return a.title.localeCompare(b.title,'zh-Hans-CN',{numeric:true});});
+      renderGrid('booksGrid',main);
+      renderGrid('spinGrid',spin);
+      renderGrid('extraGrid',extra);
+    }).catch(function(){
+      renderGrid('booksGrid',[{title:'请通过服务器访问',cover:'',file:''}]);
+    });
+  }
   function renderGrid(id,books){
     var g=document.getElementById(id);if(!g)return;
+    g.innerHTML='';
     books.forEach(function(b){
       var item=document.createElement('div');item.className='book-item';
       var cover=document.createElement('div');cover.className='book-cover';
-      cover.style.backgroundImage='url('+b.cover+')';
+      if(b.cover)cover.style.backgroundImage='url("'+b.cover+'")';
       var info=document.createElement('div');info.className='book-info';
-      var h4=document.createElement('h4');h4.textContent=b.title;
+      var h4=document.createElement('h4');h4.textContent=b.title||'未知';
       var btns=document.createElement('div');btns.className='book-btns';
-      var read=document.createElement('button');read.className='book-read';read.textContent='在线阅读';
-      read.addEventListener('click',function(){openReader(b.file);});
-      var dl=document.createElement('a');dl.className='book-dl';dl.textContent='下载';dl.href='books/'+encodeURIComponent(b.file);dl.download=b.file;
-      btns.appendChild(read);btns.appendChild(dl);info.appendChild(h4);info.appendChild(btns);
+      if(b.filename){
+        var read=document.createElement('button');read.className='book-read';read.textContent='在线阅读';
+        (function(f){read.addEventListener('click',function(){openReader(f);});})(b.filename);
+        var dl=document.createElement('a');dl.className='book-dl';dl.textContent='下载';dl.href='books/'+encodeURIComponent(b.filename);
+        btns.appendChild(read);btns.appendChild(dl);
+      }
+      info.appendChild(h4);info.appendChild(btns);
       item.appendChild(cover);item.appendChild(info);g.appendChild(item);
     });
   }
+  loadBooks();
 })();
 
-// EPUB reader
-var readerModal=null,readerChapters=[],readerCur=-1,readerZip=null;
-function openReader(filename){
+var readerModal=null,readerChapters=[],readerCur=-1,readerBook='';
+
+function openReader(fileName){
   if(!readerModal){
     readerModal=document.createElement('div');readerModal.className='reader-modal';
     readerModal.innerHTML='<div class="reader-header">'+
@@ -106,7 +114,7 @@ function openReader(filename){
     '<div class="reader-main">'+
       '<div class="reader-toc" id="readerTocList"></div>'+
       '<div class="reader-content" id="readerContent">'+
-        '<div class="reader-content-inner"><div class="reader-empty"><p>加载中...</p></div></div>'+
+        '<div class="reader-inner"><p style="text-align:center;color:#8a7faf;padding:3rem;">加载中...</p></div>'+
       '</div>'+
     '</div>';
     document.body.appendChild(readerModal);
@@ -118,82 +126,18 @@ function openReader(filename){
   }
   readerModal.classList.add('show');
   document.body.style.overflow='hidden';
+  readerBook=fileName;
   document.getElementById('readerTitle').textContent='加载中...';
-  document.getElementById('readerContent').querySelector('.reader-content-inner').innerHTML='<div class="reader-empty"><p>加载中...</p></div>';
+  setContent('<p style="text-align:center;color:#8a7faf;padding:3rem;">加载目录...</p>');
   document.getElementById('readerTocList').innerHTML='';
   document.getElementById('readerTocList').classList.remove('open');
 
-  loadEpub('books/'+filename);
-}
-
-function loadEpub(url){
-  fetch(url).then(function(r){return r.arrayBuffer();}).then(function(data){
-    return JSZip.loadAsync(data);
-  }).then(function(zip){
-    readerZip=zip;
-    document.getElementById('readerTitle').textContent='解析中...';
-    return parseEpub(zip);
-  }).then(function(chapters){
-    readerChapters=chapters;
-    renderToc(chapters);
-    if(chapters.length>0){loadReaderChapter(0);}
-    else{document.getElementById('readerContent').querySelector('.reader-content-inner').innerHTML='<div class="reader-empty"><p>无法解析章节</p></div>';}
-  }).catch(function(e){
-    document.getElementById('readerContent').querySelector('.reader-content-inner').innerHTML='<div class="reader-empty"><p>加载失败: '+e.message+'</p></div>';
-  });
-}
-
-function parseEpub(zip){
-  var chapters=[];
-  var tocFile=null;
-  zip.forEach(function(path,entry){
-    if(path.match(/toc\.ncx$/i))tocFile=path;
-  });
-  if(tocFile){
-    var file=zip.file(tocFile);
-    if(file)return file.async('string').then(function(xmlStr){
-      var parser=new DOMParser();var doc=parser.parseFromString(xmlStr,'text/xml');
-      var nps=doc.getElementsByTagName('navPoint');
-      for(var i=0;i<nps.length;i++){
-        var np=nps[i];
-        var labelEl=np.getElementsByTagName('text')[0]||np.getElementsByTagName('navLabel')[0];
-        var label=labelEl?labelEl.textContent:'章节 '+(i+1);
-        var contentEl=np.getElementsByTagName('content')[0];
-        var src=contentEl?contentEl.getAttribute('src'):'';
-        chapters.push({title:label,src:src});
-      }
-      return chapters;
-    });
-  }
-  // fallback: spine
-  var opfFile=null;
-  zip.forEach(function(path,entry){if(path.match(/\.opf$/i)&&!path.match(/META-INF/i))opfFile=path;});
-  if(!opfFile){
-    var container=zip.file('META-INF/container.xml');
-    if(container)return container.async('string').then(function(cStr){
-      var p=new DOMParser();var d=p.parseFromString(cStr,'text/xml');
-      var rf=d.getElementsByTagName('rootfile')[0];
-      if(rf){opfFile=rf.getAttribute('full-path');}
-      return parseOpfSpine(zip,opfFile);
-    });
-  }
-  return parseOpfSpine(zip,opfFile);
-}
-
-function parseOpfSpine(zip,opfFile){
-  if(!opfFile)return Promise.resolve([]);
-  return zip.file(opfFile).async('string').then(function(opfStr){
-    var chapters=[];
-    var p=new DOMParser();var d=p.parseFromString(opfStr,'text/xml');
-    var items=d.getElementsByTagName('item');var im={};
-    for(var i=0;i<items.length;i++){var it=items[i];im[it.getAttribute('id')]=it.getAttribute('href');}
-    var spine=d.getElementsByTagName('itemref');
-    var base=opfFile.replace(/\/[^\/]+$/,'')+'/';
-    for(var j=0;j<spine.length;j++){
-      var href=im[spine[j].getAttribute('idref')];
-      if(href){chapters.push({title:'第'+(j+1)+'章',src:base+href});}
-    }
-    return chapters;
+  fetch('/api/book/'+encodeURIComponent(fileName)+'/chapters').then(function(r){return r.json();}).then(function(data){
+    readerChapters=data.chapters||[];
+    renderToc(readerChapters);
+    if(readerChapters.length>0)loadReaderChapter(0);else setContent('<p style="text-align:center;color:#8a7faf;padding:3rem;">未能解析章节</p>');
+  }).catch(function(err){
+    setContent('<p style="text-align:center;color:#8a7faf;padding:3rem;">加载失败: '+err.message+'</p>');
   });
 }
 
@@ -213,61 +157,34 @@ function loadReaderChapter(index){
   document.getElementById('readerTitle').textContent=readerChapters[index].title;
   var items=document.querySelectorAll('.reader-toc-item');
   items.forEach(function(it,i){it.classList.toggle('active',i===index);});
-  var content=document.getElementById('readerContent').querySelector('.reader-content-inner');
-  content.innerHTML='<div class="reader-empty"><p>加载中...</p></div>';
+  setContent('<p style="text-align:center;color:#8a7faf;padding:3rem;">加载中...</p>');
 
-  var ch=readerChapters[index];
-  var file=readerZip.file(ch.src);
-  if(!file){
-    // try partial match
-    var found=false;
-    readerZip.forEach(function(path,entry){
-      if(!found&&path.indexOf(ch.src.replace(/^.*\//,''))>=0){found=true;file=readerZip.file(path);}
-    });
-  }
-  if(!file){content.innerHTML='<div class="reader-empty"><p>找不到章节: '+ch.src+'</p></div>';return;}
-
-  file.async('string').then(function(html){
-    // fix image paths
-    var base=ch.src.replace(/\/[^\/]+$/,'')+'/';
-    html=html.replace(/src="([^"]+)"/g,function(m,p1){
-      if(p1.match(/^(https?:|data:)/))return m;
-      var resolved=base+p1;resolved=resolved.replace(/\/\.\//g,'/');
-      while(resolved.indexOf('/../')>=0){resolved=resolved.replace(/\/[^\/]+\/\.\.\//g,'/');}
-      var imgFile=readerZip.file(resolved);
-      if(!imgFile){
-        readerZip.forEach(function(path,entry){if(!imgFile&&path.indexOf(resolved.replace(/^.*\//,''))>=0)imgFile=readerZip.file(path);});
-      }
-      if(imgFile){return 'src="'+URL.createObjectURL(new Blob([imgFile.asArrayBuffer()]))+'"';}
-      return m;
-    });
-    html=html.replace(/<svg[\s\S]*?<\/svg>/gi,'').replace(/<script[\s\S]*?<\/script>/gi,'');
+  fetch('/api/book/'+encodeURIComponent(readerBook)+'/chapter/'+index).then(function(r){return r.text();}).then(function(html){
     var body=html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
     var inner=body?body[1]:html;
-    var navHtml='<div class="reader-nav">'+
-      '<button '+(readerCur<=0?'disabled':'')+' onclick="loadReaderChapter('+(readerCur-1)+')">← 上一章</button>'+
+    inner=inner.replace(/<svg[\s\S]*?<\/svg>/gi,'').replace(/<script[\s\S]*?<\/script>/gi,'');
+    var nav='<div class="reader-nav">'+
+      '<button '+(readerCur<=0?'disabled':'')+' onclick="window._loadRd('+(readerCur-1)+')">← 上一章</button>'+
       '<span>'+(readerCur+1)+' / '+readerChapters.length+'</span>'+
-      '<button '+(readerCur>=readerChapters.length-1?'disabled':'')+' onclick="loadReaderChapter('+(readerCur+1)+')">下一章 →</button>'+
+      '<button '+(readerCur>=readerChapters.length-1?'disabled':'')+' onclick="window._loadRd('+(readerCur+1)+')">下一章 →</button>'+
     '</div>';
-    content.innerHTML='<h1>'+ch.title+'</h1>'+inner+navHtml;
+    setContent('<h1>'+readerChapters[index].title+'</h1>'+inner+nav);
     document.getElementById('readerContent').scrollTop=0;
-  }).catch(function(e){
-    content.innerHTML='<div class="reader-empty"><p>加载失败: '+e.message+'</p></div>';
-  });
+  }).catch(function(err){setContent('<p style="text-align:center;color:#8a7faf;padding:3rem;">加载失败: '+err.message+'</p>');});
 }
-window.loadReaderChapter=function(idx){loadReaderChapter(idx);};
+window._loadRd=function(idx){loadReaderChapter(idx);};
+
+function setContent(html){document.getElementById('readerContent').innerHTML='<div class="reader-inner">'+html+'</div>';}
 
 function readerKeyHandler(e){
   if(!readerModal||!readerModal.classList.contains('show'))return;
   if(e.key==='Escape'){closeReader();return;}
-  if(e.key==='ArrowRight'){loadReaderChapter(readerCur+1);}
-  if(e.key==='ArrowLeft'){loadReaderChapter(readerCur-1);}
+  if(e.key==='ArrowRight')loadReaderChapter(readerCur+1);
+  if(e.key==='ArrowLeft')loadReaderChapter(readerCur-1);
 }
-
 function closeReader(){
-  if(readerModal){readerModal.classList.remove('show');}
+  if(readerModal)readerModal.classList.remove('show');
   document.body.style.overflow='';
   document.getElementById('readerTocList').classList.remove('open');
 }
-
 })();

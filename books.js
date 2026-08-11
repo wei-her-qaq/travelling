@@ -1,27 +1,2 @@
-var BOOKS = [
-  {title:"魔女之旅 第01卷", file:"book_08.epub", cover:"books/covers/cover_08.jpg", cat:"main"},
-  {title:"魔女之旅 第02卷", file:"book_09.epub", cover:"books/covers/cover_09.jpg", cat:"main"},
-  {title:"魔女之旅 第03卷", file:"book_10.epub", cover:"books/covers/cover_10.jpg", cat:"main"},
-  {title:"魔女之旅 第04卷", file:"book_11.epub", cover:"books/covers/cover_11.jpg", cat:"main"},
-  {title:"魔女之旅 第05卷", file:"book_12.epub", cover:"books/covers/cover_12.jpg", cat:"main"},
-  {title:"魔女之旅 第06卷", file:"book_13.epub", cover:"books/covers/cover_13.jpg", cat:"main"},
-  {title:"魔女之旅 第07卷", file:"book_14.epub", cover:"books/covers/cover_14.jpeg", cat:"main"},
-  {title:"魔女之旅 第08卷", file:"book_15.epub", cover:"books/covers/cover_15.jpeg", cat:"main"},
-  {title:"魔女之旅 第09卷", file:"book_16.epub", cover:"books/covers/cover_16.jpeg", cat:"main"},
-  {title:"魔女之旅 第10卷", file:"book_17.epub", cover:"books/covers/cover_17.jpeg", cat:"main"},
-  {title:"魔女之旅 第11卷", file:"book_18.epub", cover:"books/covers/cover_18.jpg", cat:"main"},
-  {title:"魔女之旅 第12卷", file:"book_19.epub", cover:"books/covers/cover_19.jpg", cat:"main"},
-  {title:"魔女之旅 第13卷", file:"book_20.epub", cover:"books/covers/cover_20.jpg", cat:"main"},
-  {title:"魔女之旅 第14卷", file:"book_21.epub", cover:"books/covers/cover_21.jpg", cat:"main"},
-  {title:"魔女之旅 第15卷", file:"book_22.epub", cover:"books/covers/cover_22.jpeg", cat:"main"},
-  {title:"魔女之旅 第16卷", file:"book_23.epub", cover:"books/covers/cover_23.jpg", cat:"main"},
-  {title:"魔女之旅 第17卷", file:"book_24.epub", cover:"books/covers/cover_24.jpg", cat:"main"},
-  {title:"魔女之旅 18", file:"book_01.epub", cover:"books/covers/cover_01.jpg", cat:"main"},
-  {title:"魔女之旅 19", file:"book_02.epub", cover:"books/covers/cover_02.jpg", cat:"main"},
-  {title:"魔女之旅 20", file:"book_06.epub", cover:"books/covers/cover_06.jpg", cat:"main"},
-  {title:"魔女之旅 21", file:"book_07.epub", cover:"books/covers/cover_07.jpg", cat:"main"},
-  {title:"祈祷之国的莉莉艾儿 01", file:"book_03.epub", cover:"books/covers/cover_03.jpg", cat:"spin"},
-  {title:"祈祷之国的莉莉艾儿 02", file:"book_04.epub", cover:"books/covers/cover_04.jpg", cat:"spin"},
-  {title:"莉莉艾尔与祈祷之国", file:"book_05.epub", cover:"books/covers/cover_05.jpg", cat:"extra"},
-  {title:"魔女之旅 学园", file:"book_00.epub", cover:"books/covers/cover_00.jpg", cat:"extra"}
-];
+// Books loaded dynamically from /api/books (server) or fallback to static list
+var BOOKS = null;
