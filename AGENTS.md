@@ -54,5 +54,5 @@ npx serve dist
 - `server.ps1` 已废弃，所有 EPUB 解析逻辑已迁移至 `build.py`
 - 构建产物 `dist/` 完全不依赖服务端，可以直接部署到 Cloudflare Pages / Vercel / Netlify 等静态托管
 - 新增 EPUB 文件：放到 `books/`，对应封面放到 `books/covers/`（命名 `book_XX.epub` → `cover_XX.jpg`），重新运行 `build.py` 即可
-- 修改 `pyproject.toml` 依赖后，务必执行 `uv export > requirements.txt` 保持同步
+- **修改 `pyproject.toml` 依赖后，务必执行 `uv export > requirements.txt` 保持同步，否则构建将会失败！！！**
 - 章节内容使用 `BeautifulSoup('xml')` 解析 XHTML，epub 内图片通过 base64 内联避免外部请求
