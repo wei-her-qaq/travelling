@@ -62,10 +62,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbo
   function loadBooks(){
     fetch('/api/books').then(function(r){return r.json();}).then(function(data){
       (data||[]).forEach(function(b){
-        if(b.cover&&b.cover.indexOf('cover_')>=0){b.cat='main'}
-        else if(b.cover){b.cat='main'}
-        if(b.title.indexOf('外传')>=0||b.title.indexOf('莉莉')>=0)spin.push(b);
-        else if(b.title.indexOf('番外')>=0||b.title.indexOf('學園')>=0||b.title.indexOf('学园')>=0)extra.push(b);
+        if(b.cat==='spin')spin.push(b);
+        else if(b.cat==='extra')extra.push(b);
         else main.push(b);
       });
       main.sort(function(a,b){return a.title.localeCompare(b.title,'zh-Hans-CN',{numeric:true});});

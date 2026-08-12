@@ -287,10 +287,17 @@ def build():
                 cover = f"books/covers/{base}.jpg"
                 break
 
+        cat = "main"
+        if "外传" in info["title"] or "莉莉" in info["title"]:
+            cat = "spin"
+        elif "番外" in info["title"] or "學園" in info["title"] or "学园" in info["title"]:
+            cat = "extra"
+
         books_list.append({
             "filename": epub_path.name,
             "title": info["title"],
             "cover": cover,
+            "cat": cat,
         })
 
         chapters_dir = DIST / "api" / "book" / epub_path.name
