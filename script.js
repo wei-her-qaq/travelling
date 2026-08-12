@@ -162,7 +162,7 @@ function loadReaderChapter(index){
   fetch('/api/book/'+encodeURIComponent(readerBook)+'/chapter/'+index).then(function(r){return r.text();}).then(function(html){
     var body=html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
     var inner=body?body[1]:html;
-    inner=inner.replace(/<svg[\s\S]*?<\/svg>/gi,'').replace(/<script[\s\S]*?<\/script>/gi,'');
+    inner=inner.replace(/<svg[\s\S]*?<\/svg>/gi,'').replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<h1[\s\S]*?<\/h1>/i,'');
     var nav='<div class="reader-nav">'+
       '<button '+(readerCur<=0?'disabled':'')+' onclick="window._loadRd('+(readerCur-1)+')">← 上一章</button>'+
       '<span>'+(readerCur+1)+' / '+readerChapters.length+'</span>'+
