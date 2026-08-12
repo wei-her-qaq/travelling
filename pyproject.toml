@@ -1,0 +1,10 @@
+[project]
+name = "travelling"
+version = "0.1.0"
+description = "魔女之旅 fan site build script"
+requires-python = ">=3.12"
+dependencies = [
+    "ebooklib>=0.18",
+    "beautifulsoup4>=4.12",
+    "lxml>=5",
+]
