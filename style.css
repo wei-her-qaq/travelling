@@ -40,8 +40,8 @@
 
 /* section */
 .section{padding:6rem 2rem;position:relative}
-.section-header{text-align:center;margin-bottom:4rem;position:relative}
-.s-en{font-size:3rem;font-weight:bold;color:rgba(138,43,226,.06);letter-spacing:12px;position:absolute;top:-1.5rem;left:50%;transform:translateX(-50%);white-space:nowrap;pointer-events:none}
+.section-header{text-align:center;margin-bottom:4rem}
+.s-en{font-size:1.05rem;font-weight:bold;color:#8a7faf;letter-spacing:5px;vertical-align:super;margin-right:.7rem;white-space:nowrap}
 .section-header h2{font-size:2.5rem;color:#c9a0ff;letter-spacing:6px;margin-bottom:1rem;text-shadow:0 0 20px rgba(138,43,226,.3)}
 .divider{width:80px;height:3px;background:linear-gradient(90deg,transparent,#c9a0ff,transparent);margin:0 auto}
 .section-sub{color:#8a7faf;font-size:.9rem;margin-top:.8rem;letter-spacing:1px}
@@ -98,8 +98,9 @@
 .book-item:hover{transform:translateY(-6px);border-color:rgba(138,43,226,.5);box-shadow:0 10px 30px rgba(138,43,226,.2)}
 .book-cover{height:200px;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#0a0a1a;transition:transform .4s}
 .book-item:hover .book-cover{transform:scale(1.05)}
-.book-info{padding:.8rem .8rem;text-align:center}
+.book-info{position:relative;padding:.8rem .8rem;text-align:center}
 .book-info h4{font-size:.78rem;color:#c9a0ff;margin-bottom:.5rem;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.book-info h4[data-title]:hover::after{content:attr(data-title);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);max-width:240px;width:max-content;background:rgba(17,17,51,.97);border:1px solid rgba(138,43,226,.5);border-radius:8px;padding:.5rem .9rem;font-size:.8rem;color:#c9a0ff;letter-spacing:1px;line-height:1.7;white-space:normal;z-index:20;box-shadow:0 8px 25px rgba(0,0,0,.5)}
 .book-btns{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
 .book-read,.book-dl{display:inline-block;padding:.3rem .8rem;font-size:.7rem;border-radius:20px;letter-spacing:1px;transition:all .3s;cursor:pointer;border:1px solid rgba(138,43,226,.4);background:transparent;color:#c9a0ff;text-decoration:none;font-family:inherit}
 .book-read{background:rgba(138,43,226,.2);border-color:rgba(138,43,226,.5)}
@@ -194,7 +195,7 @@
   .timeline::before{left:1rem}
   .tl-item{width:100%;padding-left:2.5rem!important;padding-right:0!important;left:0!important;text-align:left!important}
   .tl-item::before{left:.2rem!important}
-  .s-en{font-size:2rem;top:-1rem}
+  .s-en{font-size:.95rem;letter-spacing:3px;vertical-align:6px}
   .section{padding:4rem 1rem}
   .reader-toc{width:100%}
 }

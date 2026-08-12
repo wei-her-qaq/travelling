@@ -84,7 +84,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbo
       var cover=document.createElement('div');cover.className='book-cover';
       if(b.cover)cover.style.backgroundImage='url("'+b.cover+'")';
       var info=document.createElement('div');info.className='book-info';
-      var h4=document.createElement('h4');h4.textContent=b.title||'未知';
+      var h4=document.createElement('h4');h4.textContent=b.title||'未知';h4.setAttribute('data-title',b.title||'未知');
       var btns=document.createElement('div');btns.className='book-btns';
       if(b.filename){
         var read=document.createElement('button');read.className='book-read';read.textContent='在线阅读';

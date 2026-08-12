@@ -42,11 +42,6 @@ def extract_book(epub_path: Path):
             for i, (name, _) in enumerate(book.spine)
         ]
 
-    chapters = []
-    for link in toc_entries:
-        title_text = getattr(link, "title", "Untitled")
-        chapters.append({"title": str(title_text), "src": str(link.href)})
-
     # Extract spine documents with inline images
     spine_items = []
     for spine_id, _ in book.spine:
@@ -54,13 +49,36 @@ def extract_book(epub_path: Path):
         if item and item.get_type() == ebooklib.ITEM_DOCUMENT:
             spine_items.append(item)
 
+    # Map normalized document href -> spine index (TOC and spine may not align 1:1)
+    href_index = {}
     for idx, item in enumerate(spine_items):
-        content = item.get_content().decode("utf-8", errors="replace")
-        content = _inline_images(content, book)
+        name = item.get_name()
+        href_index.setdefault(name, idx)
+        href_index.setdefault(os.path.basename(name), idx)
 
-        chapter_dir = DIST / "api" / "book" / epub_path.name / "chapter"
-        chapter_dir.mkdir(parents=True, exist_ok=True)
-        (chapter_dir / f"{idx}.html").write_text(content, encoding="utf-8")
+    chapter_dir = DIST / "api" / "book" / epub_path.name / "chapter"
+    chapter_dir.mkdir(parents=True, exist_ok=True)
+
+    chapters = []
+    for toc_idx, link in enumerate(toc_entries):
+        title_text = getattr(link, "title", "Untitled")
+        href = str(getattr(link, "href", ""))
+        chapters.append({"title": str(title_text), "src": href})
+
+        doc, anchor = _split_anchor(href)
+        idx = href_index.get(doc) or href_index.get(os.path.basename(doc))
+
+        if idx is None:
+            (chapter_dir / f"{toc_idx}.html").write_text(
+                '<p style="text-align:center;color:#8a7faf;padding:3rem;">未能解析章节</p>',
+                encoding="utf-8",
+            )
+            continue
+
+        content = spine_items[idx].get_content().decode("utf-8", errors="replace")
+        content = _slice_from_anchor(content, anchor)
+        content = _inline_images(content, book)
+        (chapter_dir / f"{toc_idx}.html").write_text(content, encoding="utf-8")
 
     return {
         "filename": epub_path.name,
@@ -68,6 +86,38 @@ def extract_book(epub_path: Path):
         "chapters": chapters,
         "spine_count": len(spine_items),
     }
+
+
+def _split_anchor(href):
+    """Split an href like 'a.xhtml#id' into ('a.xhtml', 'id')."""
+    if "#" in href:
+        doc, anchor = href.split("#", 1)
+        return doc, anchor
+    return href, None
+
+
+def _slice_from_anchor(html_src, anchor):
+    """Return content starting at the element with the given id (or the full content)."""
+    if not anchor:
+        return html_src
+    soup = BeautifulSoup(html_src, "xml")
+    target = soup.find(id=anchor)
+    if not target:
+        return html_src
+
+    root = soup.find("body") or soup
+    chain = []
+    node = target
+    while node is not root:
+        chain.append(node)
+        node = node.parent
+        if node is None:
+            return html_src
+
+    for node in chain:
+        for sib in list(node.previous_siblings):
+            sib.decompose()
+    return str(soup)
 
 
 def _flatten_toc(entry):
@@ -88,29 +138,51 @@ def _flatten_toc(entry):
     return links
 
 
+def _resolve_image_item(src, book):
+    """Resolve an image src (relative to the epub) to its manifest item."""
+    if not src or src.startswith("http:") or src.startswith("https:") or src.startswith("data:"):
+        return None
+
+    # Try exact href match
+    item = book.get_item_with_href(src)
+    if item:
+        return item
+
+    # Try matching by filename
+    fn = os.path.basename(src)
+    for i in book.get_items_of_type(ebooklib.ITEM_IMAGE):
+        if i.get_name().endswith(f"/{fn}") or i.get_name() == fn:
+            return i
+    return None
+
+
+def _inline_data_uri(img_item):
+    ext = os.path.splitext(img_item.get_name())[1].lower()
+    mime = IMG_MIME.get(ext, "image/jpeg")
+    b64 = base64.b64encode(img_item.get_content()).decode("ascii")
+    return f"data:{mime};base64,{b64}"
+
+
 def _inline_images(html_src, book):
     soup = BeautifulSoup(html_src, "xml")
     for img in soup.find_all("img"):
         src = img.get("src", "")
-        if not src or src.startswith("http:") or src.startswith("https:") or src.startswith("data:"):
+        if src.startswith("data:"):
             continue
-
-        img_item = None
-        # Try exact href match
-        img_item = book.get_item_with_href(src)
-        if not img_item:
-            # Try matching by filename
-            fn = os.path.basename(src)
-            for item in book.get_items_of_type(ebooklib.ITEM_IMAGE):
-                if item.get_name().endswith(f"/{fn}") or item.get_name() == fn:
-                    img_item = item
-                    break
-
+        img_item = _resolve_image_item(src, book)
         if img_item:
-            ext = os.path.splitext(img_item.get_name())[1].lower()
-            mime = IMG_MIME.get(ext, "image/jpeg")
-            b64 = base64.b64encode(img_item.get_content()).decode("ascii")
-            img["src"] = f"data:{mime};base64,{b64}"
+            img["src"] = _inline_data_uri(img_item)
+
+    # Replace <svg><image> wrappers (full-page EPUB covers) with inline <img>
+    for svg in soup.find_all("svg"):
+        image = svg.find("image")
+        if image is None:
+            continue
+        src = image.get("xlink:href") or image.get("href") or ""
+        img_item = _resolve_image_item(src, book)
+        if img_item:
+            img = soup.new_tag("img", src=_inline_data_uri(img_item), alt="cover")
+            svg.replace_with(img)
 
     return str(soup)
 
