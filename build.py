@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Build script: pre-extract EPUBs into static files under ./dist/"""
 
-import shutil, os, json, base64, warnings
+import shutil, os, json, base64, warnings, re
 from pathlib import Path
 
 import ebooklib
 from ebooklib import epub
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
+from PIL import Image
 
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
@@ -23,17 +24,18 @@ IMG_MIME = {
     ".svg": "image/svg+xml",
 }
 
+THUMB_MAX_W = 600
+COMPRESS_QUALITY = 85
+
 
 def extract_book(epub_path: Path):
     book = epub.read_epub(str(epub_path), {"ignore_ncx": False})
 
-    # Get title from dc:title
     title = epub_path.stem
     dc_titles = book.get_metadata("DC", "title")
     if dc_titles:
         title = dc_titles[0][0]
 
-    # Build TOC
     toc_entries = _flatten_toc(book.toc)
 
     if not toc_entries:
@@ -42,14 +44,12 @@ def extract_book(epub_path: Path):
             for i, (name, _) in enumerate(book.spine)
         ]
 
-    # Extract spine documents with inline images
     spine_items = []
     for spine_id, _ in book.spine:
         item = book.get_item_with_id(spine_id)
         if item and item.get_type() == ebooklib.ITEM_DOCUMENT:
             spine_items.append(item)
 
-    # Map normalized document href -> spine index (TOC and spine may not align 1:1)
     href_index = {}
     for idx, item in enumerate(spine_items):
         name = item.get_name()
@@ -78,6 +78,7 @@ def extract_book(epub_path: Path):
         content = spine_items[idx].get_content().decode("utf-8", errors="replace")
         content = _slice_from_anchor(content, anchor)
         content = _inline_images(content, book)
+        content = _add_paragraph_anchors(content, toc_idx)
         (chapter_dir / f"{toc_idx}.html").write_text(content, encoding="utf-8")
 
     return {
@@ -89,7 +90,6 @@ def extract_book(epub_path: Path):
 
 
 def _split_anchor(href):
-    """Split an href like 'a.xhtml#id' into ('a.xhtml', 'id')."""
     if "#" in href:
         doc, anchor = href.split("#", 1)
         return doc, anchor
@@ -97,7 +97,6 @@ def _split_anchor(href):
 
 
 def _slice_from_anchor(html_src, anchor):
-    """Return content starting at the element with the given id (or the full content)."""
     if not anchor:
         return html_src
     soup = BeautifulSoup(html_src, "xml")
@@ -120,8 +119,20 @@ def _slice_from_anchor(html_src, anchor):
     return str(soup)
 
 
+def _add_paragraph_anchors(html_src, chapter_index):
+    """Add id='pg-N' to each <p> tag for scroll-position tracking."""
+    soup = BeautifulSoup(html_src, "xml")
+    body = soup.find("body")
+    if body is None:
+        return html_src
+    pg = 0
+    for p in body.find_all("p"):
+        pg += 1
+        p["id"] = f"pg-{pg}"
+    return str(soup)
+
+
 def _flatten_toc(entry):
-    """Recursively extract all epub.Link items from a TOC tree."""
     links = []
     if isinstance(entry, (list, tuple)):
         for item in entry:
@@ -129,7 +140,6 @@ def _flatten_toc(entry):
     elif isinstance(entry, epub.Link):
         links.append(entry)
     elif isinstance(entry, epub.Section):
-        # Section is iterable but also has href/title
         if entry.href:
             links.append(entry)
         else:
@@ -139,16 +149,13 @@ def _flatten_toc(entry):
 
 
 def _resolve_image_item(src, book):
-    """Resolve an image src (relative to the epub) to its manifest item."""
     if not src or src.startswith("http:") or src.startswith("https:") or src.startswith("data:"):
         return None
 
-    # Try exact href match
     item = book.get_item_with_href(src)
     if item:
         return item
 
-    # Try matching by filename
     fn = os.path.basename(src)
     for i in book.get_items_of_type(ebooklib.ITEM_IMAGE):
         if i.get_name().endswith(f"/{fn}") or i.get_name() == fn:
@@ -173,7 +180,6 @@ def _inline_images(html_src, book):
         if img_item:
             img["src"] = _inline_data_uri(img_item)
 
-    # Replace <svg><image> wrappers (full-page EPUB covers) with inline <img>
     for svg in soup.find_all("svg"):
         image = svg.find("image")
         if image is None:
@@ -187,6 +193,39 @@ def _inline_images(html_src, book):
     return str(soup)
 
 
+def compress_image(src_path, dest_path):
+    if not src_path.exists():
+        return
+    try:
+        img = Image.open(src_path)
+        img = img.convert("RGB") if img.mode in ("RGBA", "P") else img
+        if dest_path.suffix.lower() in (".jpg", ".jpeg"):
+            img.save(dest_path, "JPEG", quality=COMPRESS_QUALITY, optimize=True)
+        else:
+            img.save(dest_path, optimize=True)
+    except Exception:
+        shutil.copy2(src_path, dest_path)
+
+
+def make_thumbnail(src_path, dest_path, max_w=THUMB_MAX_W):
+    if not src_path.exists():
+        return
+    try:
+        img = Image.open(src_path)
+        img = img.convert("RGB") if img.mode in ("RGBA", "P") else img
+        w = img.width
+        if w > max_w:
+            ratio = max_w / w
+            new_h = int(img.height * ratio)
+            img = img.resize((max_w, new_h), Image.LANCZOS)
+        if dest_path.suffix.lower() in (".jpg", ".jpeg"):
+            img.save(dest_path, "JPEG", quality=COMPRESS_QUALITY, optimize=True)
+        else:
+            img.save(dest_path, optimize=True)
+    except Exception:
+        shutil.copy2(src_path, dest_path)
+
+
 def build():
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -194,6 +233,23 @@ def build():
 
     shutil.copytree(ROOT / "images", DIST / "images")
     shutil.copy2(ROOT / "style.css", DIST / "style.css")
+
+    # Keep originals for wallpaper links, then compress, then generate thumbs
+    orig_dir = DIST / "images" / "orig"
+    orig_dir.mkdir(exist_ok=True)
+    image_exts = (".jpg", ".jpeg", ".png", ".gif")
+    for img_path in sorted((DIST / "images").iterdir()):
+        if img_path.is_dir() or img_path.suffix.lower() not in image_exts:
+            continue
+        shutil.copy2(img_path, orig_dir / img_path.name)
+        compress_image(ROOT / "images" / img_path.name, img_path)
+
+    thumbs_dir = DIST / "images" / "thumbs"
+    thumbs_dir.mkdir(exist_ok=True)
+    for img_path in sorted((DIST / "images").iterdir()):
+        if img_path.is_dir() or img_path.suffix.lower() not in image_exts:
+            continue
+        make_thumbnail(ROOT / "images" / img_path.name, thumbs_dir / img_path.name)
 
     dist_books = DIST / "books"
     dist_books.mkdir()
@@ -203,6 +259,15 @@ def build():
 
     for epub_path in sorted(BOOKS_DIR.glob("*.epub")):
         shutil.copy2(epub_path, dist_books / epub_path.name)
+
+    # Compress book covers
+    for cover_path in (dist_books / "covers").iterdir():
+        if cover_path.suffix.lower() in image_exts:
+            src_cover = ROOT / "books" / "covers" / cover_path.name
+            if not src_cover.exists():
+                src_cover = src_cover.with_suffix(".jpeg")
+            if src_cover.exists():
+                compress_image(src_cover, cover_path)
 
     books_list = []
     epub_files = sorted(BOOKS_DIR.glob("*.epub"))
@@ -261,6 +326,24 @@ def build():
         encoding="utf-8"
     )
 
+    # Copy reader page
+    shutil.copy2(ROOT / "reader.html", DIST / "reader.html")
+    reader_js = (ROOT / "reader.js").read_text(encoding="utf-8")
+    reader_js = reader_js.replace(
+        "fetch('/api/book/'",
+        "fetch('api/book/'"
+    )
+    reader_js = reader_js.replace(
+        "fetch('api/book/'+encodeURIComponent(readerBook)+'/chapter/'+index)",
+        "fetch('api/book/'+encodeURIComponent(readerBook)+'/chapter/'+index+'.html')"
+    )
+    reader_js = reader_js.replace(
+        "fetch('api/book/'+encodeURIComponent(bookParam)+'/chapters')",
+        "fetch('api/book/'+encodeURIComponent(bookParam)+'/chapters.json')"
+    )
+    (DIST / "reader.js").write_text(reader_js, encoding="utf-8")
+
+    # Copy index.html
     (DIST / "index.html").write_text(
         (ROOT / "index.html").read_text(encoding="utf-8"),
         encoding="utf-8"

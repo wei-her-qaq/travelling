@@ -87,7 +87,7 @@
 .walls-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
 .wall-item{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/10;cursor:pointer;background-size:cover;background-position:center;border:1px solid rgba(138,43,226,.15);transition:transform .3s,border .3s,box-shadow .3s}
 .wall-item:hover{transform:translateY(-5px) scale(1.03);border-color:rgba(138,43,226,.5);box-shadow:0 12px 35px rgba(138,43,226,.3);z-index:10}
-.wall-item span{position:absolute;bottom:0;left:0;right:0;padding:.6rem 1rem;background:linear-gradient(transparent,rgba(10,10,26,.9));font-size:.72rem;color:#c9a0ff;text-align:right}
+.wall-item span,.wall-item a{position:absolute;bottom:0;left:0;right:0;padding:.6rem 1rem;background:linear-gradient(transparent,rgba(10,10,26,.9));font-size:.72rem;color:#c9a0ff;text-align:right}
 
 /* books */
 .books-wrap{max-width:1200px;margin:0 auto}

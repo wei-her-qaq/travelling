@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>魔女之旅 - 阅读</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+body{margin:0;height:100vh;overflow:hidden;background:#000}
+.reader-modal{position:relative!important;display:flex!important;height:100vh}
+</style>
+</head>
+<body>
+<div class="reader-modal show">
+  <div class="reader-header">
+    <button class="reader-close" id="readerClose">✕</button>
+    <button class="reader-close" id="readerToc">☰</button>
+    <h3 id="readerTitle">加载中...</h3>
+    <button class="reader-close" id="readerPrev">◀</button>
+    <button class="reader-close" id="readerNext">▶</button>
+  </div>
+  <div class="reader-main">
+    <div class="reader-toc" id="readerTocList"></div>
+    <div class="reader-content" id="readerContent">
+      <div class="reader-inner"><p style="text-align:center;color:#8a7faf;padding:3rem;">加载中...</p></div>
+    </div>
+  </div>
+</div>
+<script src="reader.js"></script>
+</body>
+</html>
