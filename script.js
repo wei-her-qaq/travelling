@@ -57,6 +57,68 @@ window.openLightbox=function(src){document.getElementById('lbImg').src=src;docum
 window.closeLightbox=function(){document.getElementById('lightbox').classList.remove('show');};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
+// ===== Dynamic pointer-scale for character cards =====
+(function(){
+  var row=document.getElementById('charsRow');
+  if(!row)return;
+  var cards=row.querySelectorAll('.char-card');
+  if(!cards.length)return;
+  var mouseX=0,mouseY=0,active=false,raf=null;
+  var R=400; // decay radius in px
+
+  function update(){
+    var best=null,bestDist=Infinity;
+    cards.forEach(function(card,i){
+      var rect=card.getBoundingClientRect();
+      var cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+      var dx=mouseX-cx,dy=mouseY-cy;
+      var dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<bestDist){bestDist=dist;best=card}
+      var tier=parseFloat(card.getAttribute('data-tier')==='S'?'1.18':card.getAttribute('data-tier')==='A'?'1.15':'1.12');
+      var s=dist<R?tier:1;
+      var b=dist<R?0.18+0.82*(1-dist/R):0.18;
+      card.style.transform='scale('+s+')';
+      card.style.filter='brightness('+b.toFixed(2)+')';
+      card.style.borderColor='rgba(138,43,226,'+(dist<R?0.5:0.15)+')';
+      card.style.boxShadow=dist<R?'0 12px 40px rgba(138,43,226,'+(0.3*(1-dist/R)).toFixed(2)+')':'none';
+      card.style.zIndex=dist<R?10:1;
+    });
+    raf=null;
+  }
+
+  row.addEventListener('mousemove',function(e){
+    mouseX=e.clientX;mouseY=e.clientY;
+    if(!active){active=true;row.style.pointerEvents='auto'}
+    if(!raf)raf=requestAnimationFrame(update);
+  });
+  row.addEventListener('mouseleave',function(){
+    active=false;
+    cards.forEach(function(card){
+      card.style.transform='scale(1)';
+      card.style.filter='brightness(0.35)';
+      card.style.borderColor='rgba(138,43,226,.15)';
+      card.style.boxShadow='none';
+      card.style.zIndex=1;
+    });
+  });
+
+  // Touch fallback: tap to focus
+  cards.forEach(function(card){
+    card.addEventListener('touchstart',function(e){
+      e.preventDefault();
+      cards.forEach(function(c){c.style.transform='scale(1)';c.style.filter='brightness(0.35)';c.style.borderColor='rgba(138,43,226,.15)';c.style.boxShadow='none';c.style.zIndex=1});
+      var tier=parseFloat(card.getAttribute('data-tier')==='S'?'1.18':card.getAttribute('data-tier')==='A'?'1.15':'1.12');
+      card.style.transform='scale('+tier+')';
+      card.style.filter='brightness(0.85)';
+      card.style.borderColor='rgba(138,43,226,.5)';
+      card.style.boxShadow='0 12px 40px rgba(138,43,226,.3)';
+      card.style.zIndex=10;
+      setTimeout(function(){card.style.transform='scale(1)';card.style.filter='brightness(0.35)';card.style.borderColor='rgba(138,43,226,.15)';card.style.boxShadow='none';card.style.zIndex=1},3000);
+    });
+  });
+})();
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+
 (function(){
   var main=[],spin=[],extra=[];
   function loadBooks(){
