@@ -57,65 +57,173 @@ window.openLightbox=function(src){document.getElementById('lbImg').src=src;docum
 window.closeLightbox=function(){document.getElementById('lightbox').classList.remove('show');};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
-// ===== Dynamic pointer-scale for character cards =====
+// ===== Character Carousel =====
 (function(){
-  var row=document.getElementById('charsRow');
-  if(!row)return;
-  var cards=row.querySelectorAll('.char-card');
-  if(!cards.length)return;
-  var mouseX=0,mouseY=0,active=false,raf=null;
-  var R=400; // decay radius in px
+  var wrap=document.getElementById('charCarousel');
+  if(!wrap)return;
+  var track=document.getElementById('charTrack');
+  var orbs=track.querySelectorAll('.char-orb');
+  if(!orbs.length)return;
+  var N=orbs.length;
+  var current=0,raf=null,targetOffset=0,offset=0;
+  var detailOpen=false;
 
-  function update(){
-    var best=null,bestDist=Infinity;
-    cards.forEach(function(card,i){
-      var rect=card.getBoundingClientRect();
-      var cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
-      var dx=mouseX-cx,dy=mouseY-cy;
-      var dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<bestDist){bestDist=dist;best=card}
-      var tier=parseFloat(card.getAttribute('data-tier')==='S'?'1.18':card.getAttribute('data-tier')==='A'?'1.15':'1.12');
-      var s=dist<R?tier:1;
-      var b=dist<R?0.18+0.82*(1-dist/R):0.18;
-      card.style.transform='scale('+s+')';
-      card.style.filter='brightness('+b.toFixed(2)+')';
-      card.style.borderColor='rgba(138,43,226,'+(dist<R?0.5:0.15)+')';
-      card.style.boxShadow=dist<R?'0 12px 40px rgba(138,43,226,'+(0.3*(1-dist/R)).toFixed(2)+')':'none';
-      card.style.zIndex=dist<R?10:1;
-    });
-    raf=null;
+  // Preload images as background
+  for(var i=0;i<N;i++){
+    var img=orbs[i].getAttribute('data-img');
+    if(img)orbs[i].style.backgroundImage='url("'+img+'")';
   }
 
-  row.addEventListener('mousemove',function(e){
-    mouseX=e.clientX;mouseY=e.clientY;
-    if(!active){active=true;row.style.pointerEvents='auto'}
-    if(!raf)raf=requestAnimationFrame(update);
+  function layout(){
+    var trackH=track.offsetHeight||420;
+    var centerY=trackH/2;
+    var maxR=140; // max vertical offset from center in px
+    var visible=5; // visible orbs (center + 2 on each side)
+    var orbSize=80;
+
+    for(var i=0;i<N;i++){
+      var orb=orbs[i];
+      var rel=i-current;
+      // wrap-around distance
+      if(rel>N/2)rel-=N;
+      if(rel<-N/2)rel+=N;
+
+      var absRel=Math.abs(rel);
+      if(absRel>visible){
+        orb.style.opacity='0';
+        orb.style.transform='translate(-50%,-50%) scale(0.3)';
+        orb.style.pointerEvents='none';
+        continue;
+      }
+
+      // Arc layout: orbs curve along a vertical arc
+      var t=rel; // -visible..visible
+      var y=t*(trackH*0.13); // vertical spacing
+      var arc=Math.abs(t)*8; // horizontal offset for arc effect
+      var scale=absRel===0?1.6:Math.max(0.4,1-absRel*0.2);
+      var opacity=absRel===0?1:Math.max(0.2,1-absRel*0.25);
+      var zIndex=100-absRel;
+
+      orb.style.transform='translate('+(arc*0+0)+'px,'+y+'px) translate(-50%,-50%) scale('+scale+')';
+      orb.style.opacity=opacity;
+      orb.style.zIndex=zIndex;
+      orb.style.pointerEvents='auto';
+      orb.style.left='50%';
+      orb.style.top=centerY+'px';
+
+      if(absRel===0)orb.classList.add('focused');
+      else orb.classList.remove('focused');
+    }
+  }
+
+  function updatePanel(){
+    var orb=orbs[current];
+    if(!orb)return;
+    var img=orb.getAttribute('data-img');
+    var name=orb.getAttribute('data-name');
+    var title=orb.getAttribute('data-title');
+    var desc=orb.getAttribute('data-desc');
+    var detail=orb.getAttribute('data-detail');
+
+    var panel=document.getElementById('charInfoPanel');
+    panel.style.opacity='0.3';
+
+    setTimeout(function(){
+      document.getElementById('charInfoImg').style.backgroundImage='url("'+img+'")';
+      document.getElementById('charInfoName').textContent=name;
+      document.getElementById('charInfoTitleText').textContent=title;
+      document.getElementById('charInfoDesc').textContent=desc;
+      document.getElementById('charInfoDetail').textContent=detail;
+      if(detailOpen){
+        document.getElementById('charInfoDetail').classList.add('open');
+        document.getElementById('charInfoToggle').textContent='收起 ▲';
+      }else{
+        document.getElementById('charInfoDetail').classList.remove('open');
+        document.getElementById('charInfoToggle').textContent='展开详情 ▼';
+      }
+      panel.style.opacity='1';
+    },150);
+  }
+
+  function rotate(dir){
+    current=(current+dir+N)%N;
+    layout();
+    updatePanel();
+  }
+
+  function snapTo(idx){
+    if(idx===current)return;
+    var diff=idx-current;
+    if(diff>N/2)diff-=N;
+    if(diff<-N/2)diff+=N;
+    current=(current+diff+N)%N;
+    layout();
+    updatePanel();
+  }
+
+  // Wheel control
+  var wheelTimer=null;
+  wrap.addEventListener('wheel',function(e){
+    e.preventDefault();
+    if(wheelTimer)return;
+    var dir=e.deltaY>0?1:-1;
+    rotate(dir);
+    wheelTimer=setTimeout(function(){wheelTimer=null},120);
+  },{passive:false});
+
+  // Mouse Y-axis drag control
+  var dragging=false,startY=0,startOffset=0;
+  track.addEventListener('mousedown',function(e){
+    dragging=true;startY=e.clientY;startOffset=current;
+    track.style.cursor='grabbing';
   });
-  row.addEventListener('mouseleave',function(){
-    active=false;
-    cards.forEach(function(card){
-      card.style.transform='scale(1)';
-      card.style.filter='brightness(0.35)';
-      card.style.borderColor='rgba(138,43,226,.15)';
-      card.style.boxShadow='none';
-      card.style.zIndex=1;
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    var dy=e.clientY-startY;
+    var step=Math.round(dy/40);
+    var newIdx=(Math.round(startOffset)+step+N)%N;
+    if(newIdx!==current)snapTo(newIdx);
+  });
+  document.addEventListener('mouseup',function(){dragging=false;track.style.cursor='default'});
+
+  // Touch control
+  var touchStartY=0,touchStartOffset=0;
+  track.addEventListener('touchstart',function(e){
+    touchStartY=e.touches[0].clientY;
+    touchStartOffset=current;
+  },{passive:true});
+  track.addEventListener('touchmove',function(e){
+    var dy=e.touches[0].clientY-touchStartY;
+    var step=Math.round(dy/40);
+    var newIdx=(Math.round(touchStartOffset)+step+N)%N;
+    if(newIdx!==current)snapTo(newIdx);
+  },{passive:true});
+
+  // Click orb to focus
+  orbs.forEach(function(orb){
+    orb.addEventListener('click',function(){
+      snapTo(parseInt(orb.getAttribute('data-i')));
     });
   });
 
-  // Touch fallback: tap to focus
-  cards.forEach(function(card){
-    card.addEventListener('touchstart',function(e){
-      e.preventDefault();
-      cards.forEach(function(c){c.style.transform='scale(1)';c.style.filter='brightness(0.35)';c.style.borderColor='rgba(138,43,226,.15)';c.style.boxShadow='none';c.style.zIndex=1});
-      var tier=parseFloat(card.getAttribute('data-tier')==='S'?'1.18':card.getAttribute('data-tier')==='A'?'1.15':'1.12');
-      card.style.transform='scale('+tier+')';
-      card.style.filter='brightness(0.85)';
-      card.style.borderColor='rgba(138,43,226,.5)';
-      card.style.boxShadow='0 12px 40px rgba(138,43,226,.3)';
-      card.style.zIndex=10;
-      setTimeout(function(){card.style.transform='scale(1)';card.style.filter='brightness(0.35)';card.style.borderColor='rgba(138,43,226,.15)';card.style.boxShadow='none';card.style.zIndex=1},3000);
-    });
+  // Toggle detail
+  document.getElementById('charInfoToggle').addEventListener('click',function(){
+    detailOpen=!detailOpen;
+    var detail=document.getElementById('charInfoDetail');
+    var btn=document.getElementById('charInfoToggle');
+    if(detailOpen){
+      detail.classList.add('open');
+      btn.textContent='收起 ▲';
+    }else{
+      detail.classList.remove('open');
+      btn.textContent='展开详情 ▼';
+    }
   });
+
+  // Init
+  layout();
+  updatePanel();
+  window.addEventListener('resize',layout);
 })();
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
