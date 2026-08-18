@@ -83,22 +83,14 @@
   </div>
   <div class="wheel-container" id="wheelContainer">
     <div class="wheel-bg" id="wheelBg"></div>
-    <div class="wheel-stage" id="wheelStage">
-      <svg class="wheel-svg" id="wheelSvg" viewBox="-110 -110 220 220" preserveAspectRatio="xMidYMid meet">
-        <defs id="wheelDefs"></defs>
+    <svg class="wheel-svg" id="wheelSvg" viewBox="-280 -190 300 380" preserveAspectRatio="xMidYMid meet">
+      <defs id="wheelDefs"></defs>
+      <g clip-path="url(#wheelClip)">
         <g class="wheel-rotate" id="wheelRotate"></g>
-        <circle cx="0" cy="0" r="45" fill="none" stroke="rgba(138,43,226,.3)" stroke-width="1"/>
-        <circle cx="0" cy="0" r="100" fill="none" stroke="rgba(138,43,226,.15)" stroke-width="1"/>
-      </svg>
-    </div>
-    <div class="wheel-info-panel" id="wheelInfoPanel">
-      <div class="info-portrait" id="infoPortrait"></div>
-      <h3 id="infoName"></h3>
-      <p class="info-subtitle" id="infoTitle"></p>
-      <button class="info-toggle" id="infoToggle" aria-expanded="false"><span class="toggle-arrow">▸</span> 详细资料</button>
-      <div class="info-body" id="infoBody"><div class="info-content" id="infoContent"></div></div>
-    </div>
-    <div class="wheel-hint">滚轮旋转 · 拖拽旋转 · 点击扇形聚焦</div>
+      </g>
+      <circle cx="0" cy="0" r="110" fill="none" stroke="rgba(138,43,226,.25)" stroke-width="1"/>
+      <circle cx="0" cy="0" r="240" fill="none" stroke="rgba(138,43,226,.1)" stroke-width="1"/>
+    </svg>
   </div>
 </section>
 
