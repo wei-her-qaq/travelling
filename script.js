@@ -57,173 +57,140 @@ window.openLightbox=function(src){document.getElementById('lbImg').src=src;docum
 window.closeLightbox=function(){document.getElementById('lightbox').classList.remove('show');};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
-// ===== Character Carousel =====
+// ===== 指南针轮盘 (Compass Wheel) =====
 (function(){
-  var wrap=document.getElementById('charCarousel');
+  var wrap=document.getElementById('charWheel');
   if(!wrap)return;
-  var track=document.getElementById('charTrack');
-  var orbs=track.querySelectorAll('.char-orb');
-  if(!orbs.length)return;
-  var N=orbs.length;
-  var current=0,raf=null,targetOffset=0,offset=0;
-  var detailOpen=false;
+  var ring=document.getElementById('wheelRing');
+  var sectors=ring.querySelectorAll('.wheel-sector');
+  if(!sectors.length)return;
+  
+  var N=sectors.length;
+  var ANGLE=360/N; // 30° per sector
+  var currentIdx=0;
+  var currentAngle=0;
+  var targetAngle=0;
+  var animating=false;
 
-  // Preload images as background
-  for(var i=0;i<N;i++){
-    var img=orbs[i].getAttribute('data-img');
-    if(img)orbs[i].style.backgroundImage='url("'+img+'")';
-  }
-
-  function layout(){
-    var trackH=track.offsetHeight||420;
-    var centerY=trackH/2;
-    var maxR=140; // max vertical offset from center in px
-    var visible=5; // visible orbs (center + 2 on each side)
-    var orbSize=80;
-
+  function updateWheel(){
+    ring.style.transform='translate(-50%,-50%) rotate('+(-currentAngle)+'deg)';
+    
     for(var i=0;i<N;i++){
-      var orb=orbs[i];
-      var rel=i-current;
-      // wrap-around distance
-      if(rel>N/2)rel-=N;
-      if(rel<-N/2)rel+=N;
-
-      var absRel=Math.abs(rel);
-      if(absRel>visible){
-        orb.style.opacity='0';
-        orb.style.transform='translate(-50%,-50%) scale(0.3)';
-        orb.style.pointerEvents='none';
-        continue;
-      }
-
-      // Arc layout: orbs curve along a vertical arc
-      var t=rel; // -visible..visible
-      var y=t*(trackH*0.13); // vertical spacing
-      var arc=Math.abs(t)*8; // horizontal offset for arc effect
-      var scale=absRel===0?1.6:Math.max(0.4,1-absRel*0.2);
-      var opacity=absRel===0?1:Math.max(0.2,1-absRel*0.25);
-      var zIndex=100-absRel;
-
-      orb.style.transform='translate('+(arc*0+0)+'px,'+y+'px) translate(-50%,-50%) scale('+scale+')';
-      orb.style.opacity=opacity;
-      orb.style.zIndex=zIndex;
-      orb.style.pointerEvents='auto';
-      orb.style.left='50%';
-      orb.style.top=centerY+'px';
-
-      if(absRel===0)orb.classList.add('focused');
-      else orb.classList.remove('focused');
+      var rel=(i-currentIdx+N)%N;
+      var fromTop=Math.min(rel,N-rel);
+      var scale=fromTop===0?1.15:fromTop===1?0.85:0.7;
+      var brightness=fromTop===0?1:fromTop===1?0.7:0.4;
+      sectors[i].style.transform='scale('+scale+')';
+      sectors[i].style.filter='brightness('+brightness+')';
     }
+    
+    updateInfo(currentIdx);
   }
 
-  function updatePanel(){
-    var orb=orbs[current];
-    if(!orb)return;
-    var img=orb.getAttribute('data-img');
-    var name=orb.getAttribute('data-name');
-    var title=orb.getAttribute('data-title');
-    var desc=orb.getAttribute('data-desc');
-    var detail=orb.getAttribute('data-detail');
+  function rotateWheel(delta){
+    if(animating)return;
+    animating=true;
+    var target=currentIdx+delta;
+    target=((target%N)+N)%N;
+    var angleDelta=delta*ANGLE;
+    var startAngle=currentAngle;
+    var endAngle=currentAngle+angleDelta;
+    var startTime=null;
+    var duration=500;
 
-    var panel=document.getElementById('charInfoPanel');
-    panel.style.opacity='0.3';
-
-    setTimeout(function(){
-      document.getElementById('charInfoImg').style.backgroundImage='url("'+img+'")';
-      document.getElementById('charInfoName').textContent=name;
-      document.getElementById('charInfoTitleText').textContent=title;
-      document.getElementById('charInfoDesc').textContent=desc;
-      document.getElementById('charInfoDetail').textContent=detail;
-      if(detailOpen){
-        document.getElementById('charInfoDetail').classList.add('open');
-        document.getElementById('charInfoToggle').textContent='收起 ▲';
-      }else{
-        document.getElementById('charInfoDetail').classList.remove('open');
-        document.getElementById('charInfoToggle').textContent='展开详情 ▼';
+    function animate(ts){
+      if(!startTime)startTime=ts;
+      var elapsed=ts-startTime;
+      var progress=Math.min(elapsed/duration,1);
+      var eased=progress<0.5
+        ? 4*progress*progress*progress
+        : 1-Math.pow(-2*progress+2,3)/2;
+      currentAngle=startAngle+(endAngle-startAngle)*eased;
+      var t=startAngle+(endAngle-startAngle)*eased;
+      ring.style.transform='translate(-50%,-50%) rotate('+(-t)+'deg)';
+      
+      var rel=(Math.round((currentIdx+delta*eased)%N+N)%N);
+      for(var i=0;i<N;i++){
+        var diff=(i-rel+N)%N;
+        var fromTop=Math.min(diff,N-diff);
+        var scale=fromTop===0?1.15:fromTop===1?0.85:0.7;
+        var brightness=fromTop===0?1:fromTop===1?0.7:0.4;
+        sectors[i].style.transform='scale('+scale+')';
+        sectors[i].style.filter='brightness('+brightness+')';
       }
-      panel.style.opacity='1';
-    },150);
+      
+      if(progress<1){
+        requestAnimationFrame(animate);
+      }else{
+        currentIdx=target;
+        currentAngle=endAngle;
+        animating=false;
+        updateWheel();
+      }
+    }
+    requestAnimationFrame(animate);
   }
 
-  function rotate(dir){
-    current=(current+dir+N)%N;
-    layout();
-    updatePanel();
-  }
-
-  function snapTo(idx){
-    if(idx===current)return;
-    var diff=idx-current;
-    if(diff>N/2)diff-=N;
-    if(diff<-N/2)diff+=N;
-    current=(current+diff+N)%N;
-    layout();
-    updatePanel();
-  }
-
-  // Wheel control
+  // 滚轮控制（120ms节流）
   var wheelTimer=null;
   wrap.addEventListener('wheel',function(e){
     e.preventDefault();
-    if(wheelTimer)return;
+    if(animating||wheelTimer)return;
     var dir=e.deltaY>0?1:-1;
-    rotate(dir);
+    rotateWheel(dir);
     wheelTimer=setTimeout(function(){wheelTimer=null},120);
   },{passive:false});
 
-  // Mouse Y-axis drag control
-  var dragging=false,startY=0,startOffset=0;
-  track.addEventListener('mousedown',function(e){
-    dragging=true;startY=e.clientY;startOffset=current;
-    track.style.cursor='grabbing';
-  });
-  document.addEventListener('mousemove',function(e){
-    if(!dragging)return;
-    var dy=e.clientY-startY;
-    var step=Math.round(dy/40);
-    var newIdx=(Math.round(startOffset)+step+N)%N;
-    if(newIdx!==current)snapTo(newIdx);
-  });
-  document.addEventListener('mouseup',function(){dragging=false;track.style.cursor='default'});
-
-  // Touch control
-  var touchStartY=0,touchStartOffset=0;
-  track.addEventListener('touchstart',function(e){
-    touchStartY=e.touches[0].clientY;
-    touchStartOffset=current;
-  },{passive:true});
-  track.addEventListener('touchmove',function(e){
-    var dy=e.touches[0].clientY-touchStartY;
-    var step=Math.round(dy/40);
-    var newIdx=(Math.round(touchStartOffset)+step+N)%N;
-    if(newIdx!==current)snapTo(newIdx);
-  },{passive:true});
-
-  // Click orb to focus
-  orbs.forEach(function(orb){
-    orb.addEventListener('click',function(){
-      snapTo(parseInt(orb.getAttribute('data-i')));
+  // 点击扇区
+  sectors.forEach(function(s,i){
+    s.addEventListener('click',function(){
+      if(animating)return;
+      var diff=((i-currentIdx+N)%N);
+      if(diff>N/2)diff=diff-N;
+      if(diff!==0)rotateWheel(diff);
     });
   });
 
-  // Toggle detail
-  document.getElementById('charInfoToggle').addEventListener('click',function(){
-    detailOpen=!detailOpen;
-    var detail=document.getElementById('charInfoDetail');
-    var btn=document.getElementById('charInfoToggle');
-    if(detailOpen){
-      detail.classList.add('open');
-      btn.textContent='收起 ▲';
-    }else{
-      detail.classList.remove('open');
-      btn.textContent='展开详情 ▼';
-    }
+  function updateInfo(idx){
+    var s=sectors[idx];
+    document.getElementById('infoPortrait').style.backgroundImage='url('+s.getAttribute('data-img')+')';
+    document.getElementById('infoName').textContent=s.getAttribute('data-name');
+    document.getElementById('infoTitle').textContent=s.getAttribute('data-title');
+    document.getElementById('infoDetail').textContent=s.getAttribute('data-desc');
+  }
+
+  // 详情展开
+  var toggle=document.querySelector('.info-toggle');
+  var detail=document.getElementById('infoDetail');
+  toggle.addEventListener('click',function(){
+    var expanded=toggle.getAttribute('aria-expanded')==='true';
+    toggle.setAttribute('aria-expanded',expanded?'false':'true');
+    detail.setAttribute('aria-expanded',expanded?'false':'true');
   });
 
-  // Init
-  layout();
-  updatePanel();
-  window.addEventListener('resize',layout);
+  // 键盘控制
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft')rotateWheel(-1);
+    if(e.key==='ArrowRight')rotateWheel(1);
+  });
+
+  // 触摸控制
+  var touchStart=null;
+  wrap.addEventListener('touchstart',function(e){touchStart=e.touches[0].clientX},{passive:true});
+  wrap.addEventListener('touchmove',function(e){
+    if(touchStart===null)return;
+    var dx=e.touches[0].clientX-touchStart;
+    if(Math.abs(dx)>40){
+      if(!animating)rotateWheel(dx>0?-1:1);
+      touchStart=e.touches[0].clientX;
+    }
+  },{passive:true});
+  wrap.addEventListener('touchend',function(){touchStart=null},{passive:true});
+
+  // 初始化
+  currentAngle=0;
+  currentIdx=0;
+  updateWheel();
 })();
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
