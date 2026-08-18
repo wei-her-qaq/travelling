@@ -81,58 +81,24 @@
     <h2><span class="s-en">CHARACTERS</span>主要角色</h2>
     <div class="divider"></div>
   </div>
-  <div class="wheel-container">
-    <div class="wheel-wrapper" id="charWheel">
-      <div class="wheel-slice-mask"></div>
-      <div class="wheel-ring" id="wheelRing">
-        <div class="wheel-sector" data-i="0" data-name="伊蕾娜" data-title="灰之魔女" 
-             data-desc="银发琉璃色瞳孔的年轻魔女，15岁通过魔法师考试成为「史上最年轻的魔女」。怀揣儿时读过的《妮可冒险记》踏上旅途，以旁观者视角记录各国悲欢。自信而略带自恋。"
-             data-img="images/characters/elaina.jpg" aria-label="伊蕾娜"></div>
-        <div class="wheel-sector" data-i="1" data-name="维多利加" data-title="妮可 · 执笔者" 
-             data-desc="本名 Victorica，取自罗马神话胜利女神 Victoria。笔名妮可（Nike）取自希腊神话同名女神。她是伊蕾娜的母亲，也是芙兰与席拉的师傅——写下启发伊蕾娜成为魔女的《妮可冒险记》的人。"
-             data-img="images/characters/victorica.jpg" aria-label="维多利加"></div>
-        <div class="wheel-sector" data-i="2" data-name="芙兰" data-title="星尘之魔女" 
-             data-desc="伊蕾娜的师傅，维多利加的弟子。银发紫眸，性格随性慵懒但魔法实力深不可测。Vol 9-10「星灰魔女的师徒之旅」是全系列最受瞩目的篇章。"
-             data-img="images/characters/flan.jpg" aria-label="芙兰"></div>
-        <div class="wheel-sector" data-i="3" data-name="沙耶" data-title="炭之魔女" 
-             data-desc="黑发红瞳的东方少女，来自东洋之国。在魔法师之国与伊蕾娜相遇后产生强烈仰慕，后师从芙兰成为魔女。"
-             data-img="images/characters/saya.jpg" aria-label="沙耶"></div>
-        <div class="wheel-sector" data-i="4" data-name="席拉" data-title="暗夜之魔女" 
-             data-desc="魔女协会成员，芙兰的旧识，维多利加的另一名弟子。性格冷静沉着，暗系魔法造诣极高。"
-             data-img="images/characters/sheila.jpg" aria-label="席拉"></div>
-        <div class="wheel-sector" data-i="5" data-name="艾姆妮西亚" data-title="失忆少女" 
-             data-desc="白发少女，每当入睡就失去所有记忆——只靠一本日记维系与过去的联系。Vol 4 的全卷核心角色。"
-             data-img="images/characters/amnesia-01.jpg" aria-label="艾姆妮西亚"></div>
-        <div class="wheel-sector" data-i="6" data-name="艾丝黛尔" data-title="薰衣魔女" 
-             data-desc="拥有回溯时间能力的魔法师。为追溯过去的真相踏上追凶之路，却发现自己也是悲剧的推手。"
-             data-img="images/characters/estelle-01.jpg" aria-label="艾丝黛尔"></div>
-        <div class="wheel-sector" data-i="7" data-name="米娜" data-title="跨卷旅人" 
-             data-desc="在 Vol 1 魔法师之国登场，Vol 12 再次出现——全系列中跨越多卷反复登场的少数角色之一。"
-             data-img="images/characters/mina-01.jpg" aria-label="米娜"></div>
-        <div class="wheel-sector" data-i="8" data-name="艾莉亚" data-title="竞赛之城的少女" 
-             data-desc="伊蕾娜回到故乡竞赛之城时遇见的少女——以她为中心的「艾莉亚德妮的七天」是 Vol 6 最受瞩目的篇章。"
-             data-img="images/characters/mirarose-01.jpg" aria-label="艾莉亚"></div>
-        <div class="wheel-sector" data-i="9" data-name="师徒四人" data-title="Vol 9 群像" 
-             data-desc="Vol 9「星与灰的师徒之旅」四人组：卡莲、丽兹莱特、莫妮卡、普莉希拉"
-             data-img="images/characters/monica-01.jpg" aria-label="师徒四人"></div>
-        <div class="wheel-sector" data-i="10" data-name="莉莉缇娅" data-title="碎石魔女" 
-             data-desc="出身和平国罗贝塔的魔女，认识伊蕾娜。Vol 13 的核心角色，以碎石魔法著称。"
-             data-img="images/characters/lilitia-01.jpg" aria-label="莉莉缇娅"></div>
-        <div class="wheel-sector" data-i="11" data-name="露诺瓦" data-title="旅馆店主" 
-             data-desc="巨龙的背上经营一家移动旅馆的女店主。带着乐观与机智的口头禅。"
-             data-img="images/characters/lunova-01.jpg" aria-label="露诺瓦"></div>
-        <div class="wheel-sector" data-i="12" data-name="莉塔" data-title="旅行杀人鬼" 
-             data-desc="外表普通的女孩——被称作「旅行的杀人鬼」。在咖啡店与伊蕾娜搭话时讲述自己的故事。"
-             data-img="images/characters/rita-01.jpg" aria-label="莉塔"></div>
-      </div>
+  <div class="wheel-container" id="wheelContainer">
+    <div class="wheel-bg" id="wheelBg"></div>
+    <div class="wheel-stage" id="wheelStage">
+      <svg class="wheel-svg" id="wheelSvg" viewBox="-110 -110 220 220" preserveAspectRatio="xMidYMid meet">
+        <defs id="wheelDefs"></defs>
+        <g class="wheel-rotate" id="wheelRotate"></g>
+        <circle cx="0" cy="0" r="45" fill="none" stroke="rgba(138,43,226,.3)" stroke-width="1"/>
+        <circle cx="0" cy="0" r="100" fill="none" stroke="rgba(138,43,226,.15)" stroke-width="1"/>
+      </svg>
     </div>
-    <div class="wheel-info-panel">
+    <div class="wheel-info-panel" id="wheelInfoPanel">
       <div class="info-portrait" id="infoPortrait"></div>
       <h3 id="infoName"></h3>
       <p class="info-subtitle" id="infoTitle"></p>
-      <button class="info-toggle" aria-expanded="false"><span>▸</span> 详细资料</button>
-      <div class="info-detail" id="infoDetail"></div>
+      <button class="info-toggle" id="infoToggle" aria-expanded="false"><span class="toggle-arrow">▸</span> 详细资料</button>
+      <div class="info-body" id="infoBody"><div class="info-content" id="infoContent"></div></div>
     </div>
+    <div class="wheel-hint">滚轮旋转 · 拖拽旋转 · 点击扇形聚焦</div>
   </div>
 </section>
 
